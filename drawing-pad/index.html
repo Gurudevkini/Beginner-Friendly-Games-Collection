@@ -50,7 +50,7 @@
       border: 2px solid #00ff80;
       background: #fff;
       cursor: crosshair;
-      touch-action: none; /* prevent scrolling while drawing */
+      touch-action: none;
     }
 
     button {
@@ -148,7 +148,7 @@
     canvas.addEventListener("mouseleave", endPosition);
     canvas.addEventListener("mousemove", draw);
 
-    // Touch Events (mobile/tablets)
+    // Touch Events
     canvas.addEventListener("touchstart", (e) => {
       startPosition(e);
     });
@@ -156,7 +156,7 @@
     canvas.addEventListener("touchcancel", endPosition);
     canvas.addEventListener("touchmove", (e) => {
       draw(e);
-      e.preventDefault(); // prevent scrolling
+      e.preventDefault();
     });
 
     // Brush color & size
