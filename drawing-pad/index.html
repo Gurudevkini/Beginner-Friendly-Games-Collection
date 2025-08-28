@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawing Pad</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #222;
+      color: #eee;
+      font-family: sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin: 10px;
+      color: #00ff80;
+      text-shadow: 0 0 8px #00ff80;
+      text-align: center;
+    }
+
+    #controls {
+      margin: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #controls label {
+      font-size: 0.9em;
+    }
+
+    #controls input[type="color"],
+    #controls input[type="range"],
+    #controls button {
+      cursor: pointer;
+    }
+
+    canvas {
+      flex: 1;
+      max-width: 95vw;
+      max-height: 70vh;
+      border: 2px solid #00ff80;
+      background: #fff;
+      cursor: crosshair;
+      touch-action: none; /* prevent scrolling while drawing */
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #00ff80;
+      color: #111;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #0ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Drawing Pad</h1>
+
+  <!-- Controls -->
+  <div id="controls">
+    <label>Brush Color <input type="color" id="colorPicker" value="#000000"></label>
+    <label>Brush Size <input type="range" id="brushSize" min="2" max="40" value="5"></label>
+    <button id="toggleDrawBtn">✋ Stop Drawing</button>
+    <button id="clearBtn">Clear</button>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="drawingPad"></canvas>
+
+  <script>
+    const canvas = document.getElementById("drawingPad");
+    const ctx = canvas.getContext("2d");
+
+    let painting = false;
+    let drawingEnabled = true;
+    let brushColor = document.getElementById("colorPicker").value;
+    let brushSize = document.getElementById("brushSize").value;
+
+    // Resize canvas to fit window
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * 0.95;
+      canvas.height = window.innerHeight * 0.65;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Start drawing
+    function startPosition(e) {
+      if (!drawingEnabled) return;
+      painting = true;
+      draw(e);
+    }
+
+    // Stop drawing
+    function endPosition() {
+      painting = false;
+      ctx.beginPath();
+    }
+
+    // Get mouse/touch position
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches) {
+        return {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
+        };
+      }
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    // Draw function
+    function draw(e) {
+      if (!painting) return;
+
+      const pos = getPos(e);
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = brushColor;
+
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    // Mouse Events
+    canvas.addEventListener("mousedown", startPosition);
+    canvas.addEventListener("mouseup", endPosition);
+    canvas.addEventListener("mouseleave", endPosition);
+    canvas.addEventListener("mousemove", draw);
+
+    // Touch Events (mobile/tablets)
+    canvas.addEventListener("touchstart", (e) => {
+      startPosition(e);
+    });
+    canvas.addEventListener("touchend", endPosition);
+    canvas.addEventListener("touchcancel", endPosition);
+    canvas.addEventListener("touchmove", (e) => {
+      draw(e);
+      e.preventDefault(); // prevent scrolling
+    });
+
+    // Brush color & size
+    document.getElementById("colorPicker").addEventListener("input", e => {
+      brushColor = e.target.value;
+    });
+    document.getElementById("brushSize").addEventListener("input", e => {
+      brushSize = e.target.value;
+    });
+
+    // Clear canvas
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Toggle Drawing Mode
+    const toggleBtn = document.getElementById("toggleDrawBtn");
+    toggleBtn.addEventListener("click", () => {
+      drawingEnabled = !drawingEnabled;
+      toggleBtn.textContent = drawingEnabled ? "✋ Stop Drawing" : "🖌️ Start Drawing";
+    });
+  </script>
+</body>
+</html>
